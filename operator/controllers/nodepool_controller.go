@@ -18,7 +18,7 @@ package controllers
 
 import (
 	"context"
-
+	//"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -30,6 +30,7 @@ import (
 // NodepoolReconciler reconciles a Nodepool object
 type NodepoolReconciler struct {
 	client.Client
+	//Log    logr.Logger
 	Scheme *runtime.Scheme
 }
 
@@ -48,9 +49,9 @@ type NodepoolReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.8.3/pkg/reconcile
 func (r *NodepoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
-
+	//_ = r.Log.WithValues("application", req.NamespacedName)
 	// your logic here
-
+	//r.Log.Info("app changed", "ns", req.Namespace)
 	return ctrl.Result{}, nil
 }
 
