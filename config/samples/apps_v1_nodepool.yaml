@@ -1,0 +1,7 @@
+apiVersion: apps.operator.com/v1
+kind: Nodepool
+metadata:
+  name: nodepool-sample
+spec:
+  # Add fields here
+  foo: bar
