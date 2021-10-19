@@ -18,13 +18,17 @@ package controllers
 
 import (
 	"context"
+	"fmt"
+
+	appsv1 "github.com/SunhaoKim/nodepool_operator/api/v1"
+	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/node/v1"
+
 	//"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-
-	appsv1 "github.com/SunhaoKim/nodepool_operator/api/v1"
 )
 
 // NodepoolReconciler reconciles a Nodepool object
@@ -33,6 +37,12 @@ type NodepoolReconciler struct {
 	//Log    logr.Logger
 	Scheme *runtime.Scheme
 }
+
+//定义数据类型
+var (
+	nodes        corev1.NodeList
+	runtimeClass v1.RuntimeClass
+)
 
 //+kubebuilder:rbac:groups=apps.operator.com,resources=nodepools,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=apps.operator.com,resources=nodepools/status,verbs=get;update;patch
@@ -49,6 +59,29 @@ type NodepoolReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.8.3/pkg/reconcile
 func (r *NodepoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
+	//获取对象
+	pool := &appsv1.Nodepool{}
+	//检测是否获取到pool
+	if err := r.Get(ctx, req.NamespacedName, pool); err != nil {
+		return ctrl.Result{}, err
+	}
+	//定义err 如果存在即给节点加数据
+	err := r.List(ctx, &nodes, &client.ListOptions{LabelSelector: pool.NodeLabelSelector()})
+	fmt.Println(err)
+	//检测err是否为空
+	if client.IgnoreNotFound(err) != nil {
+		return ctrl.Result{}, nil
+	}
+	if len(nodes.Items) > 0 {
+		log.FromContext(ctx, "find nodes will merge node", "nodes", len(nodes.Items))
+		for _, n := range nodes.Items {
+			n := n
+			err := r.Patch(ctx, pool.Spec.ApplyNode(n), client.Merge)
+			if err != nil {
+				return ctrl.Result{}, nil
+			}
+		}
+	}
 	//_ = r.Log.WithValues("application", req.NamespacedName)
 	// your logic here
 	//r.Log.Info("app changed", "ns", req.Namespace)
