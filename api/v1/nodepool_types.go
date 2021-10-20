@@ -34,9 +34,9 @@ type NodepoolSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	//定义污点 标签 selector
-	Taints       []corev1.Taint    `json:"taints,omitempty"`
-	Labels       map[string]string `json:"labels,omitempty"`
-	Nodeselector map[string]string `json:"nodeselector,omitemptm"`
+	Taints []corev1.Taint    `json:"taints,omitempty"`
+	Labels map[string]string `json:"labels,omitempty"`
+	//Nodeselector map[string]string `json:"nodeselector,omitemptm"`
 	// Foo is an example field of Nodepool. Edit nodepool_types.go to remove/update
 	//NCL对应 runtime class
 	Ncl string `json:"ncl,omitempty"`

@@ -34,12 +34,46 @@ spec:
           metadata:
             type: object
           spec:
-            description: NodepoolSpec defines the desired state of Nodepool
+            description: NodepoolSpec defines the desired state of Nodepool 定义nodepollspec结构体
             properties:
+              labels:
+                additionalProperties:
+                  type: string
+                type: object
               ncl:
-                description: Foo is an example field of Nodepool. Edit nodepool_types.go
-                  to remove/update
+                description: Nodeselector map[string]string `json:"nodeselector,omitemptm"`
+                  Foo is an example field of Nodepool. Edit nodepool_types.go to remove/update
+                  NCL对应 runtime class
                 type: string
+              taints:
+                description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                  Important: Run "make" to regenerate code after modifying this file
+                  定义污点 标签 selector'
+                items:
+                  description: The node this Taint is attached to has the "effect"
+                    on any pod that does not tolerate the Taint.
+                  properties:
+                    effect:
+                      description: Required. The effect of the taint on pods that
+                        do not tolerate the taint. Valid effects are NoSchedule, PreferNoSchedule
+                        and NoExecute.
+                      type: string
+                    key:
+                      description: Required. The taint key to be applied to a node.
+                      type: string
+                    timeAdded:
+                      description: TimeAdded represents the time at which the taint
+                        was added. It is only written for NoExecute taints.
+                      format: date-time
+                      type: string
+                    value:
+                      description: The taint value corresponding to the taint key.
+                      type: string
+                  required:
+                  - effect
+                  - key
+                  type: object
+                type: array
             type: object
           status:
             description: NodepoolStatus defines the observed state of Nodepool

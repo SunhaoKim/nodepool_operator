@@ -1,7 +1,14 @@
 apiVersion: apps.operator.com/v1
 kind: Nodepool
 metadata:
-  name: nodepool-sample
+  name: master
 spec:
   # Add fields here
-  foo: bar
+  taints: 
+    - key: node-pool.test
+      value: test
+      effect: NoSchedule
+  labels:
+    "node-pool.lailin.xyz/test": "2"
+    "node-pool/master": "10"
+  ncl: runc
