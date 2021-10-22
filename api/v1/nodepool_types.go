@@ -59,9 +59,8 @@ func (s *NodepoolSpec) CleanNode(node corev1.Node) *corev1.Node {
 		if strings.Contains(taint.Key, "kubernetes") {
 			taints = append(taints, taint)
 		}
-		node.Spec.Taints = taints
 	}
-
+	node.Spec.Taints = taints
 	return &node
 }
 
