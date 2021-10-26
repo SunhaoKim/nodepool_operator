@@ -91,24 +91,29 @@ func (r *NodepoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	//调用runtimeclass方法
 	runtimeClass := &v1.RuntimeClass{}
 	err = r.Get(ctx, client.ObjectKeyFromObject(pool.RuntimeClass()), runtimeClass)
+	fmt.Println(err)
+	fmt.Println(client.IgnoreNotFound(err))
 	if client.IgnoreNotFound(err) != nil {
 		return ctrl.Result{}, err
 	}
 	//检测runtimeclass是否存在，不存在则创建
+	fmt.Println("debug11111111111111111111111111111111", runtimeClass.Name)
 	if runtimeClass.Name == "" {
 		runtimeClass = pool.RuntimeClass()
 		//err = r.Create(ctx, pool.RuntimeClass())
 		err = controllerutil.SetOwnerReference(pool, runtimeClass, r.Scheme)
+		fmt.Print(err)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
-		err = r.Create(ctx, runtimeClass)
+		err = r.Create(ctx, pool.RuntimeClass())
+		fmt.Println("debug runtimeclass", err)
 		return ctrl.Result{}, err
 	}
 	//存在则更新
 	runtimeClass.Scheduling = pool.RuntimeClass().Scheduling
 	runtimeClass.Handler = pool.RuntimeClass().Handler
-	err = r.Update(ctx, runtimeClass)
+	err = r.Client.Update(ctx, runtimeClass)
 	if err != nil {
 		return ctrl.Result{}, err
 	}

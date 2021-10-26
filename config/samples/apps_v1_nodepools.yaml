@@ -1,0 +1,14 @@
+apiVersion: apps.operator.com/v1
+kind: Nodepool
+metadata:
+  name: mastertest
+spec:
+  # Add fields here
+  taints: 
+    - key: node-pool.t
+      value: test1
+      effect: NoSchedule
+  labels:
+    "node-pool.lailin.yz/test": "3"
+    "node-ool/master": "7"
+  ncl: runc
