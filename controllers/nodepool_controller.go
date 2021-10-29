@@ -22,7 +22,6 @@ import (
 
 	appsv1 "github.com/SunhaoKim/nodepool_operator/api/v1"
 	corev1 "k8s.io/api/core/v1"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	//"k8s.io/api/node/v1beta1"
 
@@ -40,11 +39,6 @@ type NodepoolReconciler struct {
 	Log    logr.Logger
 	Scheme *runtime.Scheme
 }
-
-//定义数据类型
-var (
-	nodes corev1.NodeList
-)
 
 //+kubebuilder:rbac:groups=apps.operator.com,resources=nodepools,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=apps.operator.com,resources=nodepools/status,verbs=get;update;patch
@@ -72,17 +66,21 @@ func (r *NodepoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 	//定义err 如果存在即给节点加数据
+	var nodes corev1.NodeList
 	err = r.List(ctx, &nodes, &client.ListOptions{LabelSelector: pool.NodeLabelSelector()})
+	fmt.Println(err)
 	//检测err是否为空
 	if client.IgnoreNotFound(err) != nil {
 		return ctrl.Result{}, err
 	}
+	fmt.Println(len(nodes.Items))
 	if len(nodes.Items) > 0 {
 		r.Log.Info("find nodes, will merge data", "nodes", len(nodes.Items))
 		for _, n := range nodes.Items {
 			n := n
-			err := r.Update(ctx, pool.Spec.ApplyNode(n))
-			//err := r.Patch(ctx, pool.Spec.ApplyNode(n), client.Merge)
+			//err := r.Update(ctx, pool.Spec.ApplyNode(n))
+			fmt.Println("debug11111111111111111")
+			err := r.Client.Patch(ctx, pool.Spec.ApplyNode(n), client.Merge)
 			if err != nil {
 				return ctrl.Result{}, err
 			}
@@ -91,29 +89,28 @@ func (r *NodepoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	//调用runtimeclass方法
 	runtimeClass := &v1.RuntimeClass{}
 	err = r.Get(ctx, client.ObjectKeyFromObject(pool.RuntimeClass()), runtimeClass)
-	fmt.Println(err)
-	fmt.Println(client.IgnoreNotFound(err))
 	if client.IgnoreNotFound(err) != nil {
 		return ctrl.Result{}, err
 	}
 	//检测runtimeclass是否存在，不存在则创建
-	fmt.Println("debug11111111111111111111111111111111", runtimeClass.Name)
 	if runtimeClass.Name == "" {
-		runtimeClass = pool.RuntimeClass()
+		//runtimeClass = pool.RuntimeClass()
 		//err = r.Create(ctx, pool.RuntimeClass())
-		err = controllerutil.SetOwnerReference(pool, runtimeClass, r.Scheme)
-		fmt.Print(err)
-		if err != nil {
-			return ctrl.Result{}, err
-		}
+		//fmt.Println(pool, runtimeClass, r.Scheme)
+		//err = ctrl.SetControllerReference(pool, runtimeClass, r.Scheme)
+		//if err != nil {
+		//	return ctrl.Result{}, err
+		//}
 		err = r.Create(ctx, pool.RuntimeClass())
 		fmt.Println("debug runtimeclass", err)
 		return ctrl.Result{}, err
 	}
 	//存在则更新
-	runtimeClass.Scheduling = pool.RuntimeClass().Scheduling
-	runtimeClass.Handler = pool.RuntimeClass().Handler
-	err = r.Client.Update(ctx, runtimeClass)
+	//runtimeClass.Scheduling = pool.RuntimeClass().Scheduling
+	//runtimeClass.Handler = pool.RuntimeClass().Handler
+	//err = r.Update(ctx, pool.RuntimeClass())
+	err = r.Client.Patch(ctx, pool.RuntimeClass(), client.Merge)
+	fmt.Println("debug222222222222222222")
 	if err != nil {
 		return ctrl.Result{}, err
 	}

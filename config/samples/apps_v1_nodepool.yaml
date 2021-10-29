@@ -6,9 +6,8 @@ spec:
   # Add fields here
   taints: 
     - key: node-pool.test
-      value: test
+      value: master
       effect: NoSchedule
   labels:
-    "node-pool.lailin.xyz/test": "2"
-    "node-pool/master": "10"
+    "node-pool.lailin.xyz/master": "8"
   ncl: runc
